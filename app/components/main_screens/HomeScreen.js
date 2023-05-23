@@ -4,41 +4,62 @@ import {
   Text,
   Image,
   StyleSheet,
+  TextInput,
+  ActivityIndicator,
   TouchableOpacity,
   FlatList
 } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+
 import {HomeData} from '../../API/index'
 import {COLOR, FONTS, Loading, showToastMessage} from '../../constants';
 import {HeaderWithIcons} from '../reusable_components/Header';
+import {setdata} from '../../redux/actions/AuthAction'
+import {useDispatch, useSelector} from 'react-redux';
 
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import FontistoIcons from 'react-native-vector-icons/Fontisto';
  
 const HomeScreen = ({navigation}) => {
-  const [Data, setData] = useState([]);
   const [loading, setloading] = useState(false);
+  const [Search, setsearch] = useState('');
+
+  const [loadingfooter, setloadingfooter] = useState(false);
+  const dispatch=useDispatch()
+  const data = useSelector(state => state?.authReducer?.data);
+
+  const [URL, setURL] = useState(null);
 
   useEffect(() => {
-    APICall()
+    //APICall(Search,URL)
       }
       ,[])
-const APICall = async() => {
+      const GetDataPagination=async()=>{
+        setloadingfooter(true);
+        HomeData(Search,URL).then(async response => {
+          console.log('loginresponse', response);
+          setloadingfooter(false)
+          let combine=[...response.results,...data]
+          dispatch(setdata(combine))
+
+          setURL(response.next)
+})
+      }
+const APICall = async(val) => {
     setloading(true)
     
-      HomeData().then(async response => {
+      HomeData(val,null).then(async response => {
           console.log('loginresponse', response);
           setloading(false)
-          setData(response.data)
+          dispatch(setdata(response.results))
+          setURL(response.next)
 })
   }
   const renderCard = ({ item, index }) => {
     return (
-      <TouchableOpacity onPress={()=>navigation.navigate('CardDetail',{item:item})} style={styles.card} key={index}>
-   <View style={styles.logo}>
-        <Image resizeMode="contain" source={{uri:item.avatar}} style={{width:"100%",height:"100%"}} />
-        </View>  
-        <Text style={styles.nametext}>{item.first_name} {item.last_name}</Text>    
-        <Text style={styles.emailtext}>{item.email}</Text>    
+      <TouchableOpacity  style={styles.card} key={index}>
+   
+        <Text style={styles.nametext}>Name : {item.name}</Text>    
+        <Text style={styles.emailtext}>Population : {item.population}</Text>    
         </TouchableOpacity>
     );
   };
@@ -58,12 +79,50 @@ const APICall = async() => {
           onBackIconPress={()=>navigation.goBack()}
           onIconTwoPress={() => navigation.openDrawer()}
         />
+ <View style={styles.textInputContainer}>
+        <Feather
+          name="user"
+          color={COLOR.iconColor}
+          size={25}
+          style={styles.iconStyle}
+        />
+        <TextInput
+          style={styles.textInputStyles}
+          keyboardType='default'
+          placeholder="Search planet"
+          placeholderTextColor={COLOR.textInputTextColor}
+          returnKeyType="done"
+          value={Search}
+          onChangeText={value => {setsearch(value),APICall(value,URL)}}
+        />
+      </View>
 
     <FlatList 
-    
+    onRefresh={() => 
+                      URL===null?null:GetDataPagination()
+    }
+    refreshing={loadingfooter}
+
     keyExtractor={(item, index) => index.toString()}
     showsHorizontalScrollIndicator={false}
-    data={Data}
+    style={{flex: 1}}
+            onEndReachedThreshold={0.01}
+            scrollEventThrottle={150}
+            // ListFooterComponent={() => {
+            //   if (loadingfooter) {
+            //     return (
+            //       <View style={{height:40}}>
+            //         <ActivityIndicator size="large" color="#0000ff" />
+            //       </View>
+            //     );
+            //   } else {
+            //     return null
+            //   }
+            // }}
+              // onEndReached={()=>{
+              //   URL===null?null:GetDataPagination()
+              //                 }}
+    data={data}
     renderItem={renderCard}
   />
 </View>
@@ -80,7 +139,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     alignSelf: 'center',
   },
-  card:{padding:10}
+  card:{padding:10,borderWidth:1,margin:10,borderRadius:10}
   ,
   emailtext: {
     color: COLOR.black,
@@ -96,5 +155,30 @@ lineHeight:21  },
     fontFamily: FONTS.Roboto_Bold,
     alignSelf: 'center',
     lineHeight: 25,
+  },
+  textInputStyles: {
+    flex: 1,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 0,
+    backgroundColor: COLOR.white,
+    color: COLOR.textInputTextColor,
+    borderRadius: 5,
+    fontFamily: FONTS.Roboto_Light,
+    fontSize: 12,
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    elevation:6,
+    alignItems: 'center',
+    backgroundColor: COLOR.white,
+    borderRadius: 5,
+    marginHorizontal: 20,
+    marginVertical: 10,
+  },
+  iconStyle: {
+    padding: 10,
   },
 });

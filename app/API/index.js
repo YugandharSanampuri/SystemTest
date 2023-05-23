@@ -1,5 +1,5 @@
-export const HomeData = data => {
-    return fetch('https://reqres.in/api/users/', {
+export const HomeData = (Search,URL) => {
+    return fetch(URL===null?'https://swapi.dev/api/planets/?search='+Search:URL, {
         method: 'GET',
     })
         .then(response => response.json())

@@ -12,34 +12,30 @@ import {
 import {COLOR, FONTS, Loading, showToastMessage, ValidationRegex} from '../../constants';
 import IMAGES from '../../assets/images';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import FontistoIcons from 'react-native-vector-icons/Fontisto';
+import Feather from 'react-native-vector-icons/Feather';
 import LinearGradient from 'react-native-linear-gradient';
 import {useDispatch, useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
  
 const SignInScreen = ({navigation}) => {
-  const [emailAddress, setEmailAddress] = useState('');
+  const [userName, setuserName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(true);
   const [loading, setloading] = useState(false);
 const dispatch=useDispatch()
-  const emailRef = useRef();
+  const userRef = useRef();
   const passwordRef = useRef();
 
   const AuthAccessInApp = useSelector(state => state?.authReducer?.token_func);
   const validateSignInForm = () => {
     let isValid = true;
 
-    if (emailAddress == '') {
+    if (userName == '') {
       showToastMessage('please enter your email address');
       isValid = false;
       return isValid;
     }
-    if (!emailAddress.match(ValidationRegex.emailRegex)) {
-      showToastMessage('please enter a valid email address');
-      isValid = false;
-      return isValid;
-    }
+   
     if (password == '') {
       showToastMessage('please enter password');
       isValid = false;
@@ -69,22 +65,22 @@ const dispatch=useDispatch()
         </View>
       <Text style={styles.headingText}>Sign In</Text>
       <View style={styles.textInputContainer}>
-        <FontistoIcons
-          name="email"
+        <Feather
+          name="user"
           color={COLOR.iconColor}
           size={25}
           style={styles.iconStyle}
         />
         <TextInput
-          ref={emailRef}
+          ref={userRef}
           style={styles.textInputStyles}
-          keyboardType="email-address"
-          placeholder="Enter Email Address"
+          keyboardType='default'
+          placeholder="Enter username"
           placeholderTextColor={COLOR.textInputTextColor}
           returnKeyType="done"
-          value={emailAddress}
+          value={userName}
           onSubmitEditing={() => passwordRef.current.focus()}
-          onChangeText={emailValue => setEmailAddress(emailValue)}
+          onChangeText={emailValue => setuserName(emailValue)}
         />
       </View>
 
@@ -99,6 +95,7 @@ const dispatch=useDispatch()
           ref={passwordRef}
           style={styles.textInputStyles}
           placeholder="Password"
+          keyboardType='number-pad'
           placeholderTextColor={COLOR.textInputTextColor}
           returnKeyType="done"
           value={password}
